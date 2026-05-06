@@ -43,8 +43,11 @@ function generateDocx(templateBuffer: Buffer, mergeData: Record<string, string>)
   const doc = new Docxtemplater(zip, {
     paragraphLoop: true,
     linebreaks: true,
-    delimiters: { start: '«', end: '»' },
+    nullGetter: () => '',
   })
+  // Set custom delimiters after construction
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(doc as any).setOptions({ delimiters: { start: '\u00ab', end: '\u00bb' } })
   doc.render(mergeData)
   return doc.getZip().generate({ type: 'nodebuffer', compression: 'DEFLATE' }) as Buffer
 }
