@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
     }
 
   const zipBuffer = await outputZip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' })
-    const zipBlob = new Blob([zipBuffer], { type: 'application/zip' })
+   const zipBlob = new Blob([zipBuffer.buffer as ArrayBuffer], { type: 'application/zip' })
 
     return new NextResponse(zipBlob, {
       headers: {
