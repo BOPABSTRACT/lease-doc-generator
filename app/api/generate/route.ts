@@ -44,10 +44,8 @@ function generateDocx(templateBuffer: Buffer, mergeData: Record<string, string>)
     paragraphLoop: true,
     linebreaks: true,
     nullGetter: () => '',
+    delimiters: { start: '\u00ab', end: '\u00bb' },
   })
-  // Set custom delimiters after construction
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(doc as any).setOptions({ delimiters: { start: '\u00ab', end: '\u00bb' } })
   doc.render(mergeData)
   return doc.getZip().generate({ type: 'nodebuffer', compression: 'DEFLATE' }) as Buffer
 }
