@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import * as XLSX from 'xlsx'
-import PizZip from 'pizzip'
-import Docxtemplater from 'docxtemplater'
 import JSZip from 'jszip'
+import PizZip from 'pizzip'
 
 const COLUMN_MAP: Record<string, string> = {
   'Year': 'Year',
@@ -38,16 +37,43 @@ function sanitizeFilename(name: string): string {
   return name.replace(/[^a-zA-Z0-9_\-. ]/g, '_').trim()
 }
 
+function escapeXml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+}
+
 function generateDocx(templateBuffer: Buffer, mergeData: Record<string, string>): Buffer {
   const zip = new PizZip(templateBuffer)
-  const doc = new Docxtemplater(zip, {
-    paragraphLoop: true,
-    linebreaks: true,
-    nullGetter: () => '',
-    delimiters: { start: '\u00ab', end: '\u00bb' },
-  })
-  doc.render(mergeData)
-  return doc.getZip().generate({ type: 'nodebuffer', compression: 'DEFLATE' }) as Buffer
+  
+  // Process document.xml and all other xml parts
+  const xmlFiles = ['word/document.xml', 'word/header1.xml', 'word/footer1.xml', 
+                    'word/header2.xml', 'word/footer2.xml', 'word/header3.xml', 'word/footer3.xml']
+  
+  for (const xmlFile of xmlFiles) {
+    try {
+      let xml = zip.file(xmlFile)?.asText()
+      if (!xml) continue
+      
+      // Replace each merge tag
+      for (const [tag, value] of Object.entries(mergeData)) {
+        const escapedValue = escapeXml(value)
+        // Replace «TAG» pattern - handle both direct and XML-encoded versions
+        xml = xml.split(`\u00ab${tag}\u00bb`).join(escapedValue)
+        xml = xml.split(`&#xAB;${tag}&#xBB;`).join(escapedValue)
+        xml = xml.split(`&#171;${tag}&#187;`).join(escapedValue)
+      }
+      
+      zip.file(xmlFile, xml)
+    } catch {
+      // File doesn't exist, skip
+    }
+  }
+  
+  return zip.generate({ type: 'nodebuffer', compression: 'DEFLATE' }) as Buffer
 }
 
 export async function POST(req: NextRequest) {
@@ -90,23 +116,10 @@ export async function POST(req: NextRequest) {
       }
 
       outputZip.file(`docx/${baseName}.docx`, docxBuffer)
-
-      try {
-        const libreofficeConvert = await import('libreoffice-convert')
-        const convert = libreofficeConvert.default?.convert ?? libreofficeConvert.convert
-        const pdfBuffer = await new Promise<Buffer>((resolve, reject) => {
-          convert(docxBuffer, '.pdf', undefined, (err: Error | null, result: Buffer) => {
-            if (err) reject(err)
-            else resolve(result)
-          })
-        })
-        outputZip.file(`pdf/${baseName}.pdf`, pdfBuffer)
-      } catch {
-        outputZip.file(
-          `pdf/${baseName}_NOTE.txt`,
-          'PDF conversion requires LibreOffice on the server. DOCX file is included above.'
-        )
-      }
+      outputZip.file(
+        `pdf/${baseName}_NOTE.txt`,
+        'PDF conversion requires LibreOffice on the server. DOCX file is included above.'
+      )
     }
 
     const zipArrayBuffer: ArrayBuffer = await outputZip.generateAsync({ type: 'arraybuffer', compression: 'DEFLATE' })
