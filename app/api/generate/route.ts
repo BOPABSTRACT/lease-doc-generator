@@ -70,7 +70,6 @@ export async function POST(req: NextRequest) {
 
     const templateFile = templateFiles[0]
     const templateBuffer = Buffer.from(await templateFile.arrayBuffer())
-
     const outputZip = new JSZip()
 
     for (let i = 0; i < rows.length; i++) {
@@ -102,11 +101,14 @@ export async function POST(req: NextRequest) {
         })
         outputZip.file(`pdf/${baseName}.pdf`, pdfBuffer)
       } catch {
-        outputZip.file(`pdf/${baseName}_NOTE.txt`, 'PDF conversion requires LibreOffice on the server. DOCX file is included above.')
+        outputZip.file(
+          `pdf/${baseName}_NOTE.txt`,
+          'PDF conversion requires LibreOffice on the server. DOCX file is included above.'
+        )
       }
     }
 
-    const zipArrayBuffer = await outputZip.generateAsync({ type: 'arraybuffer', compression: 'DEFLATE' })
+    const zipArrayBuffer: ArrayBuffer = await outputZip.generateAsync({ type: 'arraybuffer', compression: 'DEFLATE' })
 
     return new NextResponse(zipArrayBuffer, {
       headers: {
