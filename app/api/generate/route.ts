@@ -24,7 +24,6 @@ const COLUMN_MAP: Record<string, string> = {
   'Royalty Number': 'Royalty_Number',
   'Bonus Amount Spelled out': 'Bonus_Amount_Spelled_out',
   'Bonus Amount Number': 'Bonus_Amount_Number',
-  'File Type': 'File_Type',
 }
 
 function buildMergeData(row: Record<string, unknown>): Record<string, string> {
