@@ -70,78 +70,6 @@ function generateDocx(templateBuffer: Buffer, mergeData: Record<string, string>)
   return zip.generate({ type: 'nodebuffer', compression: 'DEFLATE' }) as Buffer
 }
 
-async function convertToPdf(docxBuffer: Buffer, filename: string): Promise<Buffer | null> {
-  const apiKey = process.env.CLOUDCONVERT_API_KEY
-  if (!apiKey) return null
-
-  try {
-    const jobRes = await fetch('https://api.cloudconvert.com/v2/jobs', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        tasks: {
-          'upload-file': { operation: 'import/upload' },
-          'convert-file': {
-            operation: 'convert',
-            input: 'upload-file',
-            input_format: 'docx',
-            output_format: 'pdf',
-          },
-          'export-file': {
-            operation: 'export/url',
-            input: 'convert-file',
-          },
-        },
-      }),
-    })
-
-    const job = await jobRes.json()
-    const uploadTask = job.data.tasks.find((t: { name: string }) => t.name === 'upload-file')
-
-    const uploadUrl = uploadTask.result.form.url
-    const uploadParams = uploadTask.result.form.parameters
-    const uploadForm = new FormData()
-    for (const [key, value] of Object.entries(uploadParams)) {
-      uploadForm.append(key, value as string)
-    }
-    const docxArrayBuffer = docxBuffer.buffer.slice(
-      docxBuffer.byteOffset,
-      docxBuffer.byteOffset + docxBuffer.byteLength
-    ) as ArrayBuffer
-    uploadForm.append('file', new Blob([docxArrayBuffer], {
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    }), filename)
-    await fetch(uploadUrl, { method: 'POST', body: uploadForm })
-
-    let pdfUrl: string | null = null
-    for (let i = 0; i < 30; i++) {
-      await new Promise(r => setTimeout(r, 2000))
-      const statusRes = await fetch(`https://api.cloudconvert.com/v2/jobs/${job.data.id}`, {
-        headers: { 'Authorization': `Bearer ${apiKey}` },
-      })
-      const status = await statusRes.json()
-      const exportTask = status.data.tasks.find((t: { name: string }) => t.name === 'export-file')
-      if (exportTask?.status === 'finished') {
-        pdfUrl = exportTask.result.files[0].url
-        break
-      }
-      if (status.data.status === 'error') break
-    }
-
-    if (!pdfUrl) return null
-
-    const pdfRes = await fetch(pdfUrl)
-    return Buffer.from(await pdfRes.arrayBuffer())
-
-  } catch (err) {
-    console.error('CloudConvert error:', err)
-    return null
-  }
-}
-
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
@@ -181,17 +109,7 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      outputZip.file(`docx/${baseName}.docx`, docxBuffer)
-
-      const pdfBuffer = await convertToPdf(docxBuffer, `${baseName}.docx`)
-      if (pdfBuffer) {
-        outputZip.file(`pdf/${baseName}.pdf`, pdfBuffer)
-      } else {
-        outputZip.file(
-          `pdf/${baseName}_NOTE.txt`,
-          'PDF conversion unavailable. Please open the DOCX file and save as PDF manually.'
-        )
-      }
+      outputZip.file(`${baseName}.docx`, docxBuffer)
     }
 
     const zipArrayBuffer: ArrayBuffer = await outputZip.generateAsync({ type: 'arraybuffer', compression: 'DEFLATE' })
