@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import * as XLSX from 'xlsx'
-import JSZip from 'jszip'
 import PizZip from 'pizzip'
+import JSZip from 'jszip'
 
 const COLUMN_MAP: Record<string, string> = {
   'Year': 'Year',
@@ -48,32 +48,99 @@ function escapeXml(str: string): string {
 
 function generateDocx(templateBuffer: Buffer, mergeData: Record<string, string>): Buffer {
   const zip = new PizZip(templateBuffer)
-  
-  // Process document.xml and all other xml parts
-  const xmlFiles = ['word/document.xml', 'word/header1.xml', 'word/footer1.xml', 
-                    'word/header2.xml', 'word/footer2.xml', 'word/header3.xml', 'word/footer3.xml']
-  
+  const xmlFiles = [
+    'word/document.xml', 'word/header1.xml', 'word/footer1.xml',
+    'word/header2.xml', 'word/footer2.xml', 'word/header3.xml', 'word/footer3.xml'
+  ]
   for (const xmlFile of xmlFiles) {
     try {
       let xml = zip.file(xmlFile)?.asText()
       if (!xml) continue
-      
-      // Replace each merge tag
       for (const [tag, value] of Object.entries(mergeData)) {
         const escapedValue = escapeXml(value)
-        // Replace «TAG» pattern - handle both direct and XML-encoded versions
         xml = xml.split(`\u00ab${tag}\u00bb`).join(escapedValue)
         xml = xml.split(`&#xAB;${tag}&#xBB;`).join(escapedValue)
         xml = xml.split(`&#171;${tag}&#187;`).join(escapedValue)
       }
-      
       zip.file(xmlFile, xml)
     } catch {
       // File doesn't exist, skip
     }
   }
-  
   return zip.generate({ type: 'nodebuffer', compression: 'DEFLATE' }) as Buffer
+}
+
+async function convertToPdf(docxBuffer: Buffer, filename: string): Promise<Buffer | null> {
+  const apiKey = process.env.CLOUDCONVERT_API_KEY
+  if (!apiKey) return null
+
+  try {
+    // Step 1: Create a job with upload + convert + export tasks
+    const jobRes = await fetch('https://api.cloudconvert.com/v2/jobs', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        tasks: {
+          'upload-file': {
+            operation: 'import/upload',
+          },
+          'convert-file': {
+            operation: 'convert',
+            input: 'upload-file',
+            input_format: 'docx',
+            output_format: 'pdf',
+          },
+          'export-file': {
+            operation: 'export/url',
+            input: 'convert-file',
+          },
+        },
+      }),
+    })
+
+    const job = await jobRes.json()
+    const uploadTask = job.data.tasks.find((t: {name: string}) => t.name === 'upload-file')
+
+    // Step 2: Upload the DOCX
+    const uploadUrl = uploadTask.result.form.url
+    const uploadParams = uploadTask.result.form.parameters
+    const formData = new FormData()
+    for (const [key, value] of Object.entries(uploadParams)) {
+      formData.append(key, value as string)
+    }
+    formData.append('file', new Blob([docxBuffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }), filename)
+    await fetch(uploadUrl, { method: 'POST', body: formData })
+
+    // Step 3: Wait for job to complete
+    let pdfUrl: string | null = null
+    for (let i = 0; i < 30; i++) {
+      await new Promise(r => setTimeout(r, 2000))
+      const statusRes = await fetch(`https://api.cloudconvert.com/v2/jobs/${job.data.id}`, {
+        headers: { 'Authorization': `Bearer ${apiKey}` },
+      })
+      const status = await statusRes.json()
+      const exportTask = status.data.tasks.find((t: {name: string}) => t.name === 'export-file')
+      if (exportTask?.status === 'finished') {
+        pdfUrl = exportTask.result.files[0].url
+        break
+      }
+      if (status.data.status === 'error') break
+    }
+
+    if (!pdfUrl) return null
+
+    // Step 4: Download the PDF
+    const pdfRes = await fetch(pdfUrl)
+    const pdfBuffer = Buffer.from(await pdfRes.arrayBuffer())
+    return pdfBuffer
+
+  } catch (err) {
+    console.error('CloudConvert error:', err)
+    return null
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -116,10 +183,16 @@ export async function POST(req: NextRequest) {
       }
 
       outputZip.file(`docx/${baseName}.docx`, docxBuffer)
-      outputZip.file(
-        `pdf/${baseName}_NOTE.txt`,
-        'PDF conversion requires LibreOffice on the server. DOCX file is included above.'
-      )
+
+      const pdfBuffer = await convertToPdf(docxBuffer, `${baseName}.docx`)
+      if (pdfBuffer) {
+        outputZip.file(`pdf/${baseName}.pdf`, pdfBuffer)
+      } else {
+        outputZip.file(
+          `pdf/${baseName}_NOTE.txt`,
+          'PDF conversion unavailable. Please open the DOCX file and save as PDF manually.'
+        )
+      }
     }
 
     const zipArrayBuffer: ArrayBuffer = await outputZip.generateAsync({ type: 'arraybuffer', compression: 'DEFLATE' })
