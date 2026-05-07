@@ -111,8 +111,54 @@ async function convertToPdf(docxBuffer: Buffer, filename: string): Promise<Buffe
     for (const [key, value] of Object.entries(uploadParams)) {
       formData.append(key, value as string)
     }
-    formData.append('file', new Blob([docxBuffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }), filename)
-    await fetch(uploadUrl, { method: 'POST', body: formData })
+   11:18:07.992 Running build in Washington, D.C., USA (East) – iad1
+11:18:07.993 Build machine configuration: 4 cores, 8 GB
+11:18:08.003 Cloning github.com/BOPABSTRACT/lease-doc-generator (Branch: main, Commit: e6d9ba8)
+11:18:08.004 Skipping build cache, deployment was triggered without cache.
+11:18:08.444 Cloning completed: 441.000ms
+11:18:08.695 Running "vercel build"
+11:18:09.352 Vercel CLI 51.6.1
+11:18:09.585 Installing dependencies...
+11:18:16.110 npm warn deprecated multer@1.4.5-lts.2: Multer 1.x is impacted by a number of vulnerabilities, which have been patched in 2.x. You should upgrade to the latest 2.x version.
+11:18:19.824 npm warn deprecated next@14.2.5: This version has a security vulnerability. Please upgrade to a patched version. See https://nextjs.org/blog/security-update-2025-12-11 for more details.
+11:18:19.862 
+11:18:19.862 added 89 packages in 10s
+11:18:19.862 
+11:18:19.863 9 packages are looking for funding
+11:18:19.863   run `npm fund` for details
+11:18:19.910 Detected Next.js version: 14.2.5
+11:18:19.914 Running "npm run build"
+11:18:20.013 
+11:18:20.013 > lease-doc-generator@0.1.0 build
+11:18:20.013 > next build
+11:18:20.013 
+11:18:20.493 Attention: Next.js now collects completely anonymous telemetry regarding usage.
+11:18:20.493 This information is used to shape Next.js' roadmap and prioritize features.
+11:18:20.494 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+11:18:20.494 https://nextjs.org/telemetry
+11:18:20.494 
+11:18:20.542   ▲ Next.js 14.2.5
+11:18:20.542 
+11:18:20.557    Creating an optimized production build ...
+11:18:27.713  ✓ Compiled successfully
+11:18:27.714    Linting and checking validity of types ...
+11:18:29.533 Failed to compile.
+11:18:29.533 
+11:18:29.534 ./app/api/generate/route.ts:114:39
+11:18:29.534 Type error: Type 'Buffer<ArrayBufferLike>' is not assignable to type 'BlobPart'.
+11:18:29.534   Type 'Buffer<ArrayBufferLike>' is not assignable to type 'ArrayBufferView<ArrayBuffer>'.
+11:18:29.534     Types of property 'buffer' are incompatible.
+11:18:29.534       Type 'ArrayBufferLike' is not assignable to type 'ArrayBuffer'.
+11:18:29.534         Type 'SharedArrayBuffer' is missing the following properties from type 'ArrayBuffer': resizable, resize, detached, transfer, transferToFixedLength
+11:18:29.534 
+11:18:29.534   112 |       formData.append(key, value as string)
+11:18:29.534   113 |     }
+11:18:29.535 > 114 |     formData.append('file', new Blob([docxBuffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }), filename)
+11:18:29.535       |                                       ^
+11:18:29.535   115 |     await fetch(uploadUrl, { method: 'POST', body: formData })
+11:18:29.535   116 |
+11:18:29.535   117 |     // Step 3: Wait for job to complete
+11:18:29.590 Error: Command "npm run build" exited with 1
 
     // Step 3: Wait for job to complete
     let pdfUrl: string | null = null
