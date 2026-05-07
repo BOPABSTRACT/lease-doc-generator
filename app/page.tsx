@@ -3,6 +3,9 @@
 import { useState, useRef } from 'react'
 
 export default function Home() {
+  const [authenticated, setAuthenticated] = useState(false)
+  const [passwordInput, setPasswordInput] = useState('')
+  const [passwordError, setPasswordError] = useState(false)
   const [excelFile, setExcelFile] = useState<File | null>(null)
   const [templateFiles, setTemplateFiles] = useState<File[]>([])
   const [selectedTemplate, setSelectedTemplate] = useState<string>('')
@@ -11,6 +14,15 @@ export default function Home() {
   const [previewData, setPreviewData] = useState<Record<string, string>[] | null>(null)
   const excelRef = useRef<HTMLInputElement>(null)
   const templateRef = useRef<HTMLInputElement>(null)
+
+  const handlePasswordSubmit = () => {
+    if (passwordInput === 'BOP2026') {
+      setAuthenticated(true)
+      setPasswordError(false)
+    } else {
+      setPasswordError(true)
+    }
+  }
 
   const handleExcelChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -67,6 +79,87 @@ export default function Home() {
     }
   }
 
+  if (!authenticated) {
+    return (
+      <main style={{
+        minHeight: '100vh',
+        background: '#0f1117',
+        fontFamily: "'Georgia', serif",
+        color: '#e8e0d0',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <div style={{
+          background: '#0d0f14',
+          border: '1px solid #2a2a3a',
+          borderRadius: 12,
+          padding: '48px 40px',
+          width: '100%',
+          maxWidth: 400,
+          textAlign: 'center',
+        }}>
+          <div style={{
+            width: 48, height: 48,
+            background: 'linear-gradient(135deg, #c8a96e, #8b6914)',
+            borderRadius: 6,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 24, fontWeight: 'bold', color: '#fff',
+            margin: '0 auto 24px',
+          }}>B</div>
+          <div style={{ fontSize: 20, fontWeight: 600, color: '#c8a96e', marginBottom: 4 }}>
+            BOP ABSTRACT
+          </div>
+          <div style={{ fontSize: 12, color: '#666', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 32 }}>
+            Acquisition Lease Generator
+          </div>
+          <input
+            type="password"
+            placeholder="Enter password"
+            value={passwordInput}
+            onChange={e => { setPasswordInput(e.target.value); setPasswordError(false) }}
+            onKeyDown={e => e.key === 'Enter' && handlePasswordSubmit()}
+            style={{
+              width: '100%',
+              padding: '12px 16px',
+              background: '#0f1117',
+              border: `1px solid ${passwordError ? '#8b2020' : '#2a2a3a'}`,
+              borderRadius: 6,
+              color: '#e8e0d0',
+              fontSize: 15,
+              fontFamily: "'Georgia', serif",
+              boxSizing: 'border-box',
+              marginBottom: 12,
+              outline: 'none',
+            }}
+          />
+          {passwordError && (
+            <div style={{ color: '#e07070', fontSize: 13, marginBottom: 12 }}>
+              Incorrect password. Please try again.
+            </div>
+          )}
+          <button
+            onClick={handlePasswordSubmit}
+            style={{
+              width: '100%',
+              padding: '12px 32px',
+              background: 'linear-gradient(135deg, #c8a96e, #8b6914)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 6,
+              fontSize: 15,
+              fontFamily: "'Georgia', serif",
+              cursor: 'pointer',
+              letterSpacing: '0.04em',
+            }}
+          >
+            Enter
+          </button>
+        </div>
+      </main>
+    )
+  }
+
   return (
     <main style={{
       minHeight: '100vh',
@@ -96,7 +189,7 @@ export default function Home() {
             BOP ABSTRACT
           </div>
           <div style={{ fontSize: 11, color: '#666', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-            Lease Document Generator
+            Acquisition Lease Generator
           </div>
         </div>
       </header>
@@ -236,9 +329,6 @@ export default function Home() {
             ].map(tag => (
               <span key={tag} style={{ fontSize: 12, color: '#666', fontFamily: 'monospace' }}>{tag}</span>
             ))}
-          </div>
-          <div style={{ marginTop: 10, fontSize: 12, color: '#555' }}>
-            Add a <em>State</em> column to your Excel file to populate «State» in the template.
           </div>
         </div>
       </div>
