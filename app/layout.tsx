@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'BOP Abstract — Lease Document Generator',
+  title: 'BOP Acquisition Lease Generator',
   description: 'Generate oil & gas lease documents from Excel data',
 }
 
