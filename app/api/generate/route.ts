@@ -63,4 +63,147 @@ function generateDocx(templateBuffer: Buffer, mergeData: Record<string, string>)
         xml = xml.split(`&#171;${tag}&#187;`).join(escapedValue)
       }
       zip.file(xmlFile, xml)
+    } catch {
+      // File doesn't exist, skip
     }
+  }
+  return zip.generate({ type: 'nodebuffer', compression: 'DEFLATE' }) as Buffer
+}
+
+async function convertToPdf(docxBuffer: Buffer, filename: string): Promise<Buffer | null> {
+  const apiKey = process.env.CLOUDCONVERT_API_KEY
+  if (!apiKey) return null
+
+  try {
+    const jobRes = await fetch('https://api.cloudconvert.com/v2/jobs', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        tasks: {
+          'upload-file': { operation: 'import/upload' },
+          'convert-file': {
+            operation: 'convert',
+            input: 'upload-file',
+            input_format: 'docx',
+            output_format: 'pdf',
+          },
+          'export-file': {
+            operation: 'export/url',
+            input: 'convert-file',
+          },
+        },
+      }),
+    })
+
+    const job = await jobRes.json()
+    const uploadTask = job.data.tasks.find((t: { name: string }) => t.name === 'upload-file')
+
+    const uploadUrl = uploadTask.result.form.url
+    const uploadParams = uploadTask.result.form.parameters
+    const uploadForm = new FormData()
+    for (const [key, value] of Object.entries(uploadParams)) {
+      uploadForm.append(key, value as string)
+    }
+    const docxArrayBuffer = docxBuffer.buffer.slice(
+      docxBuffer.byteOffset,
+      docxBuffer.byteOffset + docxBuffer.byteLength
+    ) as ArrayBuffer
+    uploadForm.append('file', new Blob([docxArrayBuffer], {
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    }), filename)
+    await fetch(uploadUrl, { method: 'POST', body: uploadForm })
+
+    let pdfUrl: string | null = null
+    for (let i = 0; i < 30; i++) {
+      await new Promise(r => setTimeout(r, 2000))
+      const statusRes = await fetch(`https://api.cloudconvert.com/v2/jobs/${job.data.id}`, {
+        headers: { 'Authorization': `Bearer ${apiKey}` },
+      })
+      const status = await statusRes.json()
+      const exportTask = status.data.tasks.find((t: { name: string }) => t.name === 'export-file')
+      if (exportTask?.status === 'finished') {
+        pdfUrl = exportTask.result.files[0].url
+        break
+      }
+      if (status.data.status === 'error') break
+    }
+
+    if (!pdfUrl) return null
+
+    const pdfRes = await fetch(pdfUrl)
+    return Buffer.from(await pdfRes.arrayBuffer())
+
+  } catch (err) {
+    console.error('CloudConvert error:', err)
+    return null
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const formData = await req.formData()
+    const excelFile = formData.get('excel') as File
+    const templateFiles = formData.getAll('templates') as File[]
+
+    if (!excelFile || templateFiles.length === 0) {
+      return NextResponse.json({ error: 'Missing excel or template files' }, { status: 400 })
+    }
+
+    const excelBuffer = Buffer.from(await excelFile.arrayBuffer())
+    const workbook = XLSX.read(excelBuffer, { type: 'buffer' })
+    const sheet = workbook.Sheets[workbook.SheetNames[0]]
+    const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' }) as Record<string, unknown>[]
+
+    if (rows.length === 0) {
+      return NextResponse.json({ error: 'No data rows found in spreadsheet' }, { status: 400 })
+    }
+
+    const templateFile = templateFiles[0]
+    const templateBuffer = Buffer.from(await templateFile.arrayBuffer())
+    const outputZip = new JSZip()
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i]
+      const mergeData = buildMergeData(row)
+      const lessor1 = sanitizeFilename(mergeData['Lessor_1'] || `Record_${i + 1}`)
+      const baseName = `${String(i + 1).padStart(3, '0')}_${lessor1}`
+
+      let docxBuffer: Buffer
+      try {
+        docxBuffer = generateDocx(templateBuffer, mergeData)
+      } catch (err) {
+        return NextResponse.json(
+          { error: `Failed to merge row ${i + 1} (${mergeData['Lessor_1']}): ${String(err)}` },
+          { status: 500 }
+        )
+      }
+
+      outputZip.file(`docx/${baseName}.docx`, docxBuffer)
+
+      const pdfBuffer = await convertToPdf(docxBuffer, `${baseName}.docx`)
+      if (pdfBuffer) {
+        outputZip.file(`pdf/${baseName}.pdf`, pdfBuffer)
+      } else {
+        outputZip.file(
+          `pdf/${baseName}_NOTE.txt`,
+          'PDF conversion unavailable. Please open the DOCX file and save as PDF manually.'
+        )
+      }
+    }
+
+    const zipArrayBuffer: ArrayBuffer = await outputZip.generateAsync({ type: 'arraybuffer', compression: 'DEFLATE' })
+
+    return new NextResponse(zipArrayBuffer, {
+      headers: {
+        'Content-Type': 'application/zip',
+        'Content-Disposition': `attachment; filename="lease-documents.zip"`,
+      },
+    })
+  } catch (err) {
+    console.error(err)
+    return NextResponse.json({ error: String(err) }, { status: 500 })
+  }
+}
