@@ -5,6 +5,7 @@ import JSZip from 'jszip'
 
 const COLUMN_MAP: Record<string, string> = {
   'Year': 'Year',
+  'Lessor': 'Lessor',
   'Lessor 1': 'Lessor_1',
   'Lessor 2': 'Lessor_2',
   'Status': 'Status',
@@ -19,10 +20,11 @@ const COLUMN_MAP: Record<string, string> = {
   'Deed Book': 'Deed_Book',
   'Deed Page': 'Deed_Page',
   'Insteument': 'Insteument',
-  'Royalty (Spelled out)': 'Royalty_Spelled_out',
-  'Royalty (Number)': 'Royalty_Number',
-  'Bonus Amount (Spelled out)': 'Bonus_Amount_Spelled_out',
-  'Bonus Amount (Number)': 'Bonus_Amount_Number',
+  'Royalty Spelled out': 'Royalty_Spelled_out',
+  'Royalty Number': 'Royalty_Number',
+  'Bonus Amount Spelled out': 'Bonus_Amount_Spelled_out',
+  'Bonus Amount Number': 'Bonus_Amount_Number',
+  'File Type': 'File_Type',
 }
 
 function buildMergeData(row: Record<string, unknown>): Record<string, string> {
