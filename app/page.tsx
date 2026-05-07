@@ -108,7 +108,7 @@ export default function Home() {
             margin: '0 auto 24px',
           }}>B</div>
           <div style={{ fontSize: 20, fontWeight: 600, color: '#c8a96e', marginBottom: 4 }}>
-            BOP ABSTRACT
+            BOP AQUISITION LLC
           </div>
           <div style={{ fontSize: 12, color: '#666', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 32 }}>
             Acquisition Lease Generator
