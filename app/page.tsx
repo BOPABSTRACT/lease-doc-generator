@@ -111,7 +111,7 @@ export default function Home() {
           </h1>
           <p style={{ color: '#888', fontSize: 15, margin: 0, lineHeight: 1.6 }}>
             Upload your Excel spreadsheet and lease template(s). The app will generate
-            one Word document and one PDF per row, then package them into a ZIP for download.
+            one Word document per row, then package them into a ZIP for download.
           </p>
         </div>
 
@@ -228,7 +228,7 @@ export default function Home() {
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 24px' }}>
             {[
-              '«Year»','«Lessor_1»','«Lessor_2»','«Status»','«Address»',
+              '«Year»','«Lessor»','«Lessor_1»','«Lessor_2»','«Status»','«Address»',
               '«Township»','«County»','«State»','«Gross_Acres»','«Tax_ID»',
               '«Vesting_Lessor»','«Vesting_Date»','«Deed_Book»','«Deed_Page»',
               '«Insteument»','«Royalty_Spelled_out»','«Royalty_Number»',
