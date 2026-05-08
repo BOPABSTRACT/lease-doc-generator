@@ -19,7 +19,7 @@ const COLUMN_MAP: Record<string, string> = {
   'Vesting Date': 'Vesting_Date',
   'Deed Book': 'Deed_Book',
   'Deed Page': 'Deed_Page',
-  'Instrument': 'Instrument',
+  'Insteument': 'Insteument',
   'Royalty Spelled out': 'Royalty_Spelled_out',
   'Royalty Number': 'Royalty_Number',
   'Bonus Amount Spelled out': 'Bonus_Amount_Spelled_out',
