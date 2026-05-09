@@ -2,6 +2,8 @@
 
 import { useState, useRef } from 'react'
 
+const LOGO = "https://i.imgur.com/szjzoxt.png"
+
 export default function Home() {
   const [authenticated, setAuthenticated] = useState(false)
   const [passwordInput, setPasswordInput] = useState('')
@@ -100,9 +102,9 @@ export default function Home() {
           textAlign: 'center',
         }}>
           <img
-            src="/bop-acq-logo_Blackout.png"
+            src={LOGO}
             alt="BOP Acquisition Logo"
-            style={{ width: 120, height: 120, objectFit: 'contain', margin: '0 auto 24px', display: 'block' }}
+            style={{ width: 140, height: 140, objectFit: 'contain', margin: '0 auto 24px', display: 'block' }}
           />
           <div style={{ fontSize: 20, fontWeight: 600, color: '#c8a96e', marginBottom: 4 }}>
             BOP ACQUISITION
@@ -175,7 +177,7 @@ export default function Home() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <img
-            src="/bop-acq-logo_Blackout.png"
+            src={LOGO}
             alt="BOP Acquisition Logo"
             style={{ width: 52, height: 52, objectFit: 'contain', flexShrink: 0 }}
           />
