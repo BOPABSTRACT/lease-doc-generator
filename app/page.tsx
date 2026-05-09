@@ -108,10 +108,10 @@ export default function Home() {
             margin: '0 auto 24px',
           }}>B</div>
           <div style={{ fontSize: 20, fontWeight: 600, color: '#c8a96e', marginBottom: 4 }}>
-            BOP AQUISITION LLC
+            BOP ACQUISITION
           </div>
           <div style={{ fontSize: 12, color: '#666', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 32 }}>
-            Acquisition Lease Generator
+            Lease Generator
           </div>
           <input
             type="password"
@@ -173,25 +173,32 @@ export default function Home() {
         padding: '24px 48px',
         display: 'flex',
         alignItems: 'center',
-        gap: '16px',
+        justifyContent: 'space-between',
         background: '#0d0f14',
       }}>
-        <div style={{
-          width: 36, height: 36,
-          background: 'linear-gradient(135deg, #c8a96e, #8b6914)',
-          borderRadius: 4,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 18, fontWeight: 'bold', color: '#fff',
-          flexShrink: 0,
-        }}>B</div>
-        <div>
-          <div style={{ fontSize: 18, fontWeight: 600, letterSpacing: '0.04em', color: '#c8a96e' }}>
-            BOP ABSTRACT
-          </div>
-          <div style={{ fontSize: 11, color: '#666', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-            Acquisition Lease Generator
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{
+            width: 36, height: 36,
+            background: 'linear-gradient(135deg, #c8a96e, #8b6914)',
+            borderRadius: 4,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 18, fontWeight: 'bold', color: '#fff',
+            flexShrink: 0,
+          }}>B</div>
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 600, letterSpacing: '0.04em', color: '#c8a96e' }}>
+              BOP ACQUISITION
+            </div>
+            <div style={{ fontSize: 11, color: '#666', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+              Lease Generator
+            </div>
           </div>
         </div>
+        <a href="/help" style={{
+          color: '#c8a96e', fontSize: 13, textDecoration: 'none',
+          border: '1px solid #333', padding: '6px 14px', borderRadius: 4,
+          letterSpacing: '0.04em',
+        }}>User Guide</a>
       </header>
 
       <div style={{ maxWidth: 820, margin: '0 auto', padding: '48px 32px' }}>
