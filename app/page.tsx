@@ -99,14 +99,11 @@ export default function Home() {
           maxWidth: 400,
           textAlign: 'center',
         }}>
-          <div style={{
-            width: 48, height: 48,
-            background: 'linear-gradient(135deg, #c8a96e, #8b6914)',
-            borderRadius: 6,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 24, fontWeight: 'bold', color: '#fff',
-            margin: '0 auto 24px',
-          }}>B</div>
+          <img
+            src="/bop-acq-logo_Blackout.png"
+            alt="BOP Acquisition Logo"
+            style={{ width: 120, height: 120, objectFit: 'contain', margin: '0 auto 24px', display: 'block' }}
+          />
           <div style={{ fontSize: 20, fontWeight: 600, color: '#c8a96e', marginBottom: 4 }}>
             BOP ACQUISITION
           </div>
@@ -170,21 +167,18 @@ export default function Home() {
     }}>
       <header style={{
         borderBottom: '1px solid #2a2a3a',
-        padding: '24px 48px',
+        padding: '16px 48px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         background: '#0d0f14',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{
-            width: 36, height: 36,
-            background: 'linear-gradient(135deg, #c8a96e, #8b6914)',
-            borderRadius: 4,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 18, fontWeight: 'bold', color: '#fff',
-            flexShrink: 0,
-          }}>B</div>
+          <img
+            src="/bop-acq-logo_Blackout.png"
+            alt="BOP Acquisition Logo"
+            style={{ width: 52, height: 52, objectFit: 'contain', flexShrink: 0 }}
+          />
           <div>
             <div style={{ fontSize: 18, fontWeight: 600, letterSpacing: '0.04em', color: '#c8a96e' }}>
               BOP ACQUISITION
