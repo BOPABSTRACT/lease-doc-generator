@@ -16,16 +16,11 @@ export default function HelpPage() {
         background: '#0d0f14',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{
-            width: 36, height: 36,
-            background: 'linear-gradient(135deg, #c8a96e, #8b6914)',
-            borderRadius: 4,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 18, fontWeight: 'bold', color: '#fff',
-          }}>B</div>
+          <img src="https://i.imgur.com/szjzoxt.png" alt="BOP Acquisition Logo"
+            style={{ width: 44, height: 44, objectFit: 'contain', flexShrink: 0 }} />
           <div>
             <div style={{ fontSize: 18, fontWeight: 600, letterSpacing: '0.04em', color: '#c8a96e' }}>BOP ACQUISITION</div>
-            <div style={{ fontSize: 11, color: '#666', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Lease Document Generator</div>
+            <div style={{ fontSize: 11, color: '#666', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Lease Generator</div>
           </div>
         </div>
         <a href="/" style={{
@@ -42,7 +37,6 @@ export default function HelpPage() {
           the app does it for you — generating one completed Word document per row in your spreadsheet.
         </p>
 
-        {/* Steps */}
         {[
           {
             n: '1', title: 'Open the App & Log In',
@@ -93,25 +87,54 @@ export default function HelpPage() {
 
         <hr style={{ border: 'none', borderTop: '1px solid #1e1e2e', margin: '36px 0' }} />
 
-        {/* Two columns */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 36 }}>
           <div style={{ background: '#0d0f14', border: '1px solid #1e1e2e', borderRadius: 8, padding: 20 }}>
             <div style={{ fontSize: 11, color: '#c8a96e', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>Required Excel Columns</div>
-            {['Year','Lessor (full combined name)','Lessor 1 (first lessor)','Lessor 2 (second lessor)','Status (e.g. Husband and Wife)','Address','Township','County','State (e.g. PA, WV)','Gross Acres','Tax ID','Vesting Lessor','Vesting Date','Deed Book','Deed Page','Instrument','Royalty Spelled out','Royalty Number','Bonus Amount Spelled out','Bonus Amount Number'].map(col => (
+            {[
+              'Year',
+              'Lessor (full combined name)',
+              'Lessor 1 (first lessor)',
+              'Lessor 2 (second lessor)',
+              'Status (e.g. Husband and Wife)',
+              'Address',
+              'Township',
+              'County',
+              'State (e.g. PA, WV)',
+              'Gross Acres',
+              'Tax ID',
+              'Vesting Lessor',
+              'Vesting Date',
+              'Deed Book',
+              'Deed Page',
+              'Instrument',
+              'Royalty Spelled out',
+              'Royalty Number',
+              'Bonus Amount Spelled out',
+              'Bonus Amount Number',
+            ].map(col => (
               <div key={col} style={{ fontSize: 13, color: '#888', padding: '4px 0', borderBottom: '1px solid #1a1a2a' }}>{col}</div>
             ))}
           </div>
           <div style={{ background: '#0d0f14', border: '1px solid #1e1e2e', borderRadius: 8, padding: 20 }}>
             <div style={{ fontSize: 11, color: '#c8a96e', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>Available Templates</div>
-            {['NEPA Lease','PA Allegheny / Wash Lease','PA Allegheny / Wash Lease (Flat Rate)','PA EQT Artemis Lease','PA Long Form Lease','Short Form Lease','Short Form Lease (Flat Rate)','WV Long Form Lease'].map(t => (
+            {[
+              'NEPA Lease',
+              'PA Allegheny / Wash Lease',
+              'PA Allegheny / Wash Lease (Flat Rate)',
+              'PA EQT Artemis Lease',
+              'PA EQT Artemis Lease (Non Surface)',
+              'PA Long Form Lease',
+              'Short Form Lease',
+              'Short Form Lease (Flat Rate)',
+              'WV Long Form Lease',
+            ].map(t => (
               <div key={t} style={{ fontSize: 13, color: '#888', padding: '4px 0', borderBottom: '1px solid #1a1a2a' }}>{t}</div>
             ))}
           </div>
         </div>
 
-        {/* Tips */}
         <div style={{ background: '#0d0f14', border: '1px solid #2a3a2a', borderRadius: 8, padding: '20px 24px' }}>
-          <div style={{ fontSize: 11, color: '#70c090', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>Tips & Common Issues</div>
+          <div style={{ fontSize: 11, color: '#70c090', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>Tips &amp; Common Issues</div>
           {[
             'Make sure your Excel file uses the exact column names listed above — spelling and capitalization matter.',
             'Each row in your spreadsheet = one lease document in the output ZIP.',
